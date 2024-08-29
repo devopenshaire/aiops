@@ -1,0 +1,39 @@
+{
+	"info": {
+		"_postman_id": "db0dbc27-77e0-4a47-8fc0-0af6b038bc9c",
+		"name": "Ollama",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23055448"
+	},
+	"item": [
+		{
+			"name": "generate",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"model\": \"llama3.1\",\n  \"prompt\": \"Why is the sky blue?\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:11434/api/generate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "11434",
+					"path": [
+						"api",
+						"generate"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

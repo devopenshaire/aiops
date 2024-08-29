@@ -1,0 +1,36 @@
+services:
+
+  ui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: always
+    ports:
+      - 3011:8080
+    volumes:
+      - ./open-webui:/app/backend/data
+    environment:
+      # - "ENABLE_SIGNUP=false"
+      - "OLLAMA_BASE_URL=http://127.0.0.1:11434"
+      # - "OLLAMA_BASE_URL=http://ollama:11434"
+      - "HSA_OVERRIDE_GFX_VERSION=11.0.0"
+
+  # ollama:
+  #   image: ollama/ollama
+  #   container_name: ollama
+  #   restart: always
+  #   ports:
+  #     - 11434:11434
+  #   volumes:
+  #     - ./ollama:/root/.ollama
+  #   environment:
+  #     - "HSA_OVERRIDE_GFX_VERSION=11.0.0"
+#    deploy:
+#      resources:
+#        reservations:
+#          devices:
+#            - driver: nvidia
+#              count: 1
+#              capabilities: [gpu]
+
+# URL:
+#   http://localhost:3011/ 
