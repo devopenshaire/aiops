@@ -10,9 +10,10 @@ services:
       - ./open-webui:/app/backend/data
     environment:
       # - "ENABLE_SIGNUP=false"
-      - "OLLAMA_BASE_URL=http://127.0.0.1:11434"
+      # - "OLLAMA_BASE_URL=http://127.0.0.1:11434"
+      - "OLLAMA_BASE_URL=http://192.168.1.78:11434"
       # - "OLLAMA_BASE_URL=http://ollama:11434"
-      - "HSA_OVERRIDE_GFX_VERSION=11.0.0"
+      # - "HSA_OVERRIDE_GFX_VERSION=11.0.0"
 
   # ollama:
   #   image: ollama/ollama

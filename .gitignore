@@ -162,5 +162,5 @@ cython_debug/
 #.idea/
 
 # Project specific
-**/ollama
+ollama/models/
 **/open-webui
