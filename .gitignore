@@ -163,4 +163,5 @@ cython_debug/
 
 # Project specific
 ollama/models/
-**/open-webui
+open-webui/data
+logs/

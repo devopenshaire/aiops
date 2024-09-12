@@ -1,20 +1,5 @@
 services:
 
-  ui:
-    image: ghcr.io/open-webui/open-webui:main
-    container_name: open-webui
-    restart: always
-    ports:
-      - 3011:8080
-    volumes:
-      - ./open-webui:/app/backend/data
-    environment:
-      # - "ENABLE_SIGNUP=false"
-      # - "OLLAMA_BASE_URL=http://127.0.0.1:11434"
-      - "OLLAMA_BASE_URL=http://192.168.1.78:11434"
-      # - "OLLAMA_BASE_URL=http://ollama:11434"
-      # - "HSA_OVERRIDE_GFX_VERSION=11.0.0"
-
   # ollama:
   #   image: ollama/ollama
   #   container_name: ollama
@@ -25,13 +10,87 @@ services:
   #     - ./ollama:/root/.ollama
   #   environment:
   #     - "HSA_OVERRIDE_GFX_VERSION=11.0.0"
-#    deploy:
-#      resources:
-#        reservations:
-#          devices:
-#            - driver: nvidia
-#              count: 1
-#              capabilities: [gpu]
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+  
+  ui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: always
+    ports:
+      - 3011:8080
+    volumes:
+      - ./open-webui/data:/app/backend/data
+    environment:
+      - "OLLAMA_BASE_URL=http://192.168.1.78:11434"
+      # - "OLLAMA_BASE_URL=http://127.0.0.1:11434"
+      # - "OLLAMA_BASE_URL=http://ollama:11434"
+      # - "ENABLE_SIGNUP=false"
+      # - "HSA_OVERRIDE_GFX_VERSION=11.0.0"
+    networks:
+      - common
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.13
+    container_name: elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - node.name=ollama-elasticsearch
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    networks:
+      - common
+    # volumes:
+    #   - ollama-elasticsearch-data:/usr/share/elasticsearch/data
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.13
+    container_name: logstash
+    ports:
+      - "5042:5000"
+    environment:
+      - LS_HEAP_SIZE=1024m
+    command: ["-f", "/usr/share/logstash/config/logstash.conf"]
+    depends_on:
+      - elasticsearch
+    volumes:
+      - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logstash:/usr/share/logstash/config
+      - ./logs:/usr/share/logstash/logs
+      # - ollama-elasticsearch-data:/usr/share/logstash/data
+    networks:
+      - common
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.13
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - KIBANA_ELASTICSEARCH_URL=http://ollama-elasticsearch:9200
+    depends_on:
+      - logstash
+    # volumes:
+    #   - ollama-kibana-data:/usr/share/kibana/data
+    networks:
+      - common
+
+networks:
+  common:
+    driver: bridge
+
+# volumes:
+#   ollama-elasticsearch-data:
+#   ollama-logstash-config:
+#   ollama-kibana-data:
 
 # URL:
 #   http://localhost:3011/ 

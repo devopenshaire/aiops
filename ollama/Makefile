@@ -1,36 +1,36 @@
-NAME			= ai
+NAME			= ollama
 OLLAMA			= /usr/local/bin/ollama
-CURRENT_DIR 	:= $(subst /Makefile,,$(abspath $(lastword $(MAKEFILE_LIST))))
 
-MODELS			= llama3:8b \
-					gemma2:2b
+CURRENT_DIR 	:= $(subst /Makefile,,$(abspath $(lastword $(MAKEFILE_LIST))))
+MODEL			= llama3:8b
+MODELS_FOLDER	= $(CURRENT_DIR)/models
 
 IP				= $(shell ifconfig \
 					| grep -Eo 'inet (addr:)?([0-9]{1,3}\.){3}[0-9]{1,3}' \
 					| grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' \
 					| grep -v '127.0.0.1' \
 					| grep -v '\.1$$')
+PORT			= 11434
 
 # Command line arguments handler
 #
 RULES_WITH_ARGUMENTS	:= 	pull
-CONTAINTS_FUNCTION 	= $(filter $(1),$(RULES_WITH_ARGUMENTS))
-ifeq ($(call CONTAINTS_FUNCTION,$(firstword $(MAKECMDGOALS))),$(firstword $(MAKECMDGOALS)))
+FUNCTION 	= $(filter $(1),$(RULES_WITH_ARGUMENTS))
+ifeq ($(call FUNCTION,$(firstword $(MAKECMDGOALS))),$(firstword $(MAKECMDGOALS)))
     ARG1 		:= $(word 2,$(MAKECMDGOALS))
-    # ARG2 		:= $(word 3,$(MAKECMDGOALS))
-    $(eval $(ARG1)|;@|)
-    # $(eval $(ARG2)|;@|)
+    ARG1		:= $(subst :,\:, $(ARG1))
+    $(eval $(ARG1):;@:)
+	ARG1		:= $(subst \:,:, $(ARG1))
 endif
-
-test:
-				@echo $(CURRENT_DIR)
 
 all:			$(NAME)
 
+$(NAME):
+				@$(MAKE) --no-print-directory pull $(MODEL)
+				@$(MAKE) --no-print-directory server
+
 ip_view:
 				@echo $(IP)
-
-pull:
 
 # Pull model
 #
@@ -40,29 +40,31 @@ pull:
 								"\te.g: make pull llama3:8b\n"
 else
 pull:
-				@docker run --name ollama_test -d --rm -v $(CURRENT_DIR)/models:/root/.ollama/models ollama/ollama:latest serve
-				docker exec -it ollama_test ollama pull $(ARG1)
-				@docker stop ollama_test		
+				@docker run --name ollama_temp -d --rm \
+					-v $(MODELS_FOLDER):/root/.ollama/models \
+					ollama/ollama:latest serve
+				docker exec -it ollama_temp ollama pull $(ARG1)
+				@docker stop ollama_temp		
 endif
 
-ollama:
+server:
 				OLLAMA_DEBUG=1 \
-				OLLAMA_HOST=$(IP):11434 \
+				OLLAMA_HOST=$(IP):$(PORT) \
 				OLLAMA_KEEP_ALIVE=5m \
 				OLLAMA_MAX_LOADED_MODELS=100 \
 				OLLAMA_MAX_QUEUE=256 \
-				OLLAMA_MODELS="$(CURRENT_DIR)/ollama/models" \
+				OLLAMA_MODELS="$(MODELS_FOLDER)" \
 				OLLAMA_NUM_PARALLEL=1 \
 				OLLAMA_NOPRUNE=0 \
 				OLLAMA_ORIGINS="*" \
 				OLLAMA_SCHED_SPREAD=0 \
 				OLLAMA_TMPDIR="/tmp" \
 				OLLAMA_FLASH_ATTENTION=0 \
-				$(OLLAMA) serve
-
+				$(OLLAMA) serve > /Users/facko/workplace/devopenshaire/aiops/logs/ollama.log 2>&1
 
 clean:
-				/bin/rm -f $(OBJS)
+				@docker stop ollama_temp 2>/dev/null || echo "\t- No docker contianer named 'ollama_temp' running"
+				@pkill ollama 2>/dev/null || echo "\t- No ollama process running"
 
 fclean:			clean
 
@@ -70,4 +72,8 @@ re:				fclean all
 
 f:				all clean
 
-.PHONY:			all clean fclean re f ollama test
+.PHONY:			all clean fclean re f \
+				ollama \
+				ip_view \
+				pull \
+				server
