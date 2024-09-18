@@ -1,6 +1,6 @@
 NAME			= aiops
 CURRENT_DIR 	= $(subst /Makefile,,$(abspath $(lastword $(MAKEFILE_LIST))))
-OLLAMA_DIR	= $(CURRENT_DIR)/ollama
+OLLAMA_DIR		= $(CURRENT_DIR)/ollama
 
 # # Command line arguments handler
 # #
@@ -15,10 +15,12 @@ OLLAMA_DIR	= $(CURRENT_DIR)/ollama
 
 all:			$(NAME)
 
-$(NAME):		ollama
+$(NAME):		aiops_compose
 
-# test:
-# 				@echo hi
+
+aiops_compose:
+				HOST=docker.for.mac.localhost \
+				docker compose up
 
 ollama:
 				@$(MAKE) --directory $(OLLAMA_DIR) --no-print-directory ollama

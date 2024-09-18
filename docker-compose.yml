@@ -27,7 +27,7 @@ services:
     volumes:
       - ./open-webui/data:/app/backend/data
     environment:
-      - "OLLAMA_BASE_URL=http://192.168.1.78:11434"
+      - "OLLAMA_BASE_URL=http://${HOST:-docker.for.mac.localhost}:11434"
       # - "OLLAMA_BASE_URL=http://127.0.0.1:11434"
       # - "OLLAMA_BASE_URL=http://ollama:11434"
       # - "ENABLE_SIGNUP=false"
@@ -93,4 +93,5 @@ networks:
 #   ollama-kibana-data:
 
 # URL:
-#   http://localhost:3011/ 
+#   Ollama: http://localhost:3011/
+#   Kibana: http://localhost:5601/
