@@ -17,16 +17,16 @@ all:			$(NAME)
 
 $(NAME):		aiops_compose
 
-
 aiops_compose:
 				HOST=docker.for.mac.localhost \
-				docker compose up
+				docker compose up -d
 
 ollama:
 				@$(MAKE) --directory $(OLLAMA_DIR) --no-print-directory ollama
 
 clean:
 				@$(MAKE) --directory $(OLLAMA_DIR) --no-print-directory clean
+				docker compose down
 
 fclean:			clean
 
