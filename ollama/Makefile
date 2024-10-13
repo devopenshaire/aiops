@@ -69,7 +69,7 @@ server:
 				OLLAMA_SCHED_SPREAD=0 \
 				OLLAMA_TMPDIR="/tmp" \
 				OLLAMA_FLASH_ATTENTION=0 \
-				$(OLLAMA) serve > $(LOGS_FOLDER)/ollama.log 2>&1
+				$(OLLAMA) serve > $(LOGS_FOLDER)/ollama.log 2>&1 &
 
 clean:
 				@docker stop ollama_temp 2>/dev/null || echo "\t- No docker contianer named 'ollama_temp' running"

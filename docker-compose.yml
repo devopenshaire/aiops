@@ -23,11 +23,11 @@ services:
     container_name: open-webui
     restart: always
     ports:
-      - 3011:8080
+      - "${SERVER_HOST:-127.0.0.1}:3011:8080"
     volumes:
       - ./open-webui/data:/app/backend/data
     environment:
-      - "OLLAMA_BASE_URL=http://${HOST:-docker.for.mac.localhost}:11434"
+      - "OLLAMA_BASE_URL=http://${LOCALHOST:-docker.for.mac.localhost}:11434"
       # - "OLLAMA_BASE_URL=http://127.0.0.1:11434"
       # - "OLLAMA_BASE_URL=http://ollama:11434"
       # - "ENABLE_SIGNUP=false"
@@ -69,11 +69,27 @@ services:
     networks:
       - common
 
+  jupiter-notebook:
+    build:
+      context: jupiter-notebook
+      dockerfile: Dockerfile
+    image: jupiter-notebook
+    ports:
+      - "${SERVER_HOST:-127.0.0.1}:8088:8888"
+    environment:
+      - JUPYTER_TOKEN=token
+    container_name: jupiter_notebook
+    volumes:
+      - ./jupiter-notebook/src:/home/jovyan/work
+    restart: always
+    networks:
+      - common
+
   kibana:
     image: docker.elastic.co/kibana/kibana:7.17.13
     container_name: kibana
     ports:
-      - "5601:5601"
+      - "${SERVER_HOST:-127.0.0.1}:5601:5601"
     environment:
       - KIBANA_ELASTICSEARCH_URL=http://ollama-elasticsearch:9200
     depends_on:
@@ -95,3 +111,4 @@ networks:
 # URL:
 #   Ollama: http://localhost:3011/
 #   Kibana: http://localhost:5601/
+#   jupiter Notebook: http://localhost:8084
