@@ -26,6 +26,9 @@ endif
 NAME					= aiops
 CURRENT_DIR 			= $(subst /Makefile,,$(abspath $(lastword $(MAKEFILE_LIST))))
 OLLAMA_DIR				= $(CURRENT_DIR)/ollama
+DOCKER_COMPOSE 			= DOCKER_LOCALHOST=$(DOCKER_LOCALHOST) \
+							SERVER_HOST=$(SERVER_HOST) \
+							docker-compose
 
 # Command line arguments handler
 #
@@ -40,33 +43,41 @@ endif
 
 all:					$(NAME)
 
+# Start all servers
+#
 $(NAME):
 						@$(MAKE) --directory $(OLLAMA_DIR) --no-print-directory serve $(SERVER_HOST)
 						@$(MAKE) --directory $(CURRENT_DIR) --no-print-directory aiops_compose
 
+# View server host
+#
 view_server_host:
-						@echo $(SERVER_HOST)
+						@echo "http://$(SERVER_HOST)"
 
+# Start all servers using Docker Compose
+#
 aiops_compose:
-						@DOCKER_LOCALHOST=$(DOCKER_LOCALHOST) \
-						SERVER_HOST=$(SERVER_HOST) \
-						docker compose up -d
-ifeq ($(ARG1),)
-ollama:
-						@echo "\nPlease specify the command.\n" \
-							"\te.g: make ollama serve\n" \
-							"\t     make ollama stop\n"
-else ifeq ($(ARG1),serve)
-ollama:
-						@$(MAKE) --directory $(OLLAMA_DIR) --no-print-directory $(ARG1) $(SERVER_HOST)
-else ifeq ($(ARG1),stop)
-ollama:
-						@$(MAKE) --directory $(OLLAMA_DIR) --no-print-directory clean
-endif
+						@$(DOCKER_COMPOSE) up --build -d
+						@$(MAKE) --no-print-directory view_server_host
 
+# Print docker-compose command
+#
+view_docker_compose_command:
+						@echo $(DOCKER_COMPOSE)
+
+# Ollama server
+# 	TODO: Add ollama commands pull, serve, etc.
+ollama_command:
+						@$(MAKE) --directory $(OLLAMA_DIR) --no-print-directory ollama_command
+
+view_ollama_command:
+						@$(MAKE) --directory $(OLLAMA_DIR) --no-print-directory view_ollama_command
+
+# Clean
+#
 clean:
+						@$(DOCKER_COMPOSE) down
 						@$(MAKE) --directory $(OLLAMA_DIR) --no-print-directory clean
-						@docker compose down
 
 fclean:					clean
 
@@ -75,4 +86,6 @@ re:						fclean all
 f:						all clean
 
 .PHONY:					all clean fclean re f \
+						view_server_host \
+						aiops_compose \
 						ollama
